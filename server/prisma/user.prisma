@@ -1,0 +1,17 @@
+model User {
+  uuid     String  @id @unique @default(uuid())
+  socketId String? @unique
+  language String  @default("en")
+  coins    Int     @default(100000)
+  isAI     Boolean @default(false)
+
+  activeGameId String?
+  activeGame   BinokelGame? @relation("ActiveGame", fields: [activeGameId], references: [uuid])
+
+  melds         BinokelMeld[]
+  wonReizRounds BinokelRound[]             @relation("RoundReizWinner")
+  wonTurns      BinokelTurn[]              @relation("TurnsTrickWinner")
+  ownedCards    BinokelCardOwnedByPlayer[]
+  dealtRounds   BinokelRound[]             @relation("RoundDealer")
+  reizActions   BinokelReizAction[]
+}

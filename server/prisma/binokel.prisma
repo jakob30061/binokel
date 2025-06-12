@@ -1,0 +1,102 @@
+model BinokelGame {
+  uuid        String   @id @default(uuid())
+  pin         String   @unique
+  password    String?
+  activeSince DateTime @default(now())
+
+  maxPlayer Int    @default(3)
+  players   User[] @relation("ActiveGame")
+
+  ruleId Int
+  rule   BinokelRule @relation(fields: [ruleId], references: [id])
+
+  rounds        BinokelRound[]
+  // pointer to the current active round
+  activeRoundId Int?           @unique
+  activeRound   BinokelRound?  @relation(name: "GameActiveRound", fields: [activeRoundId], references: [id])
+
+  @@index([pin])
+}
+
+model BinokelRule {
+  id     Int           @id @default(autoincrement())
+  name   String
+  global Boolean       @default(false)
+  games  BinokelGame[]
+
+  // Rules
+  rounds Int      @default(1)
+  deck   CardDeck @default(WUERTTEMBERGISCH)
+}
+
+model BinokelRound {
+  id          Int        @id @default(autoincrement())
+  roundNumber Int
+  trump       CardSuit?
+  state       RoundState @default(WAITING_FOR_PLAYERS)
+  dealerUuid  String?
+  dealer      User?      @relation("RoundDealer", fields: [dealerUuid], references: [uuid])
+
+  gameUuid String
+  game     BinokelGame @relation(fields: [gameUuid], references: [uuid], onDelete: Cascade)
+
+  activeInGame BinokelGame? @relation(name: "GameActiveRound")
+
+  reizValue      Int?
+  reizWinnerUuid String?
+  reizWinner     User?   @relation("RoundReizWinner", fields: [reizWinnerUuid], references: [uuid])
+
+  turns       BinokelTurn[]
+  melds       BinokelMeld[]
+  cards       BinokelCardOwnedByPlayer[]
+  reizActions BinokelReizAction[]
+
+  @@unique([gameUuid, roundNumber])
+}
+
+model BinokelTurn {
+  id         Int @id @default(autoincrement())
+  turnNumber Int
+
+  roundId Int
+  round   BinokelRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  trickWinnerUuid String?
+  trickWinner     User?   @relation("TurnsTrickWinner", fields: [trickWinnerUuid], references: [uuid])
+  pointsWon       Int?
+
+  playedCards BinokelCardOwnedByPlayer[] @relation("TurnCards")
+
+  createdAt DateTime @default(now())
+
+  @@unique([roundId, turnNumber])
+}
+
+model BinokelReizAction {
+  id         Int      @id @default(autoincrement())
+  roundId    Int
+  playerUuid String
+  bidValue   Int? // if null, that means “passed”
+  passed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  round  BinokelRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  player User         @relation(fields: [playerUuid], references: [uuid])
+
+  @@index([roundId, playerUuid, bidValue, passed])
+}
+
+model BinokelMeld {
+  id     Int                        @id @default(autoincrement())
+  points Int
+  cards  BinokelCardOwnedByPlayer[] @relation("MeldCards")
+
+  roundId Int
+  round   BinokelRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  userUuid String
+  user     User   @relation(fields: [userUuid], references: [uuid])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

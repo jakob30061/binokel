@@ -1,0 +1,34 @@
+model BinokelCardOwnedByPlayer {
+  id   Int      @id @default(autoincrement())
+  copy CardCopy
+
+  cardId Int
+  card   Card @relation(fields: [cardId], references: [id])
+
+  roundId Int
+  round   BinokelRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  playerUuid String
+  player     User   @relation(fields: [playerUuid], references: [uuid])
+
+  turnId Int?
+  turn   BinokelTurn? @relation("TurnCards", fields: [turnId], references: [id])
+
+  meldId Int?
+  meld   BinokelMeld? @relation("MeldCards", fields: [meldId], references: [id])
+
+  playedAt DateTime?
+
+  @@unique([roundId, cardId, copy])
+}
+
+model Card {
+  id     Int      @id @default(autoincrement())
+  suit   CardSuit
+  rank   CardRank
+  points Int
+
+  ownedByPlayers BinokelCardOwnedByPlayer[]
+
+  @@unique([suit, rank]) // there is exactly one “Ober-Eichel” in the dictionary
+}

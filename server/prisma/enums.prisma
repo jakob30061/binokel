@@ -1,0 +1,35 @@
+enum RoundState {
+  WAITING_FOR_PLAYERS
+  DEALT
+  REIZING
+  TRUMP_SELECTION
+  MELDING
+  PLAYING
+  FINISHED
+}
+
+enum CardSuit {
+  EICHEL
+  SCHIPPEN
+  HERZ
+  SCHELLEN
+}
+
+enum CardRank {
+  SIEBEN
+  UNTER
+  OBER
+  KÖNIG
+  ZEHN
+  ASS
+}
+
+enum CardDeck {
+  WUERTTEMBERGISCH
+  FRENCH
+}
+
+enum CardCopy {
+  A // first copy in the deck
+  B // second copy in the deck
+}
